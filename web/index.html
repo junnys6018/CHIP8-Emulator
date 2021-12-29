@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CHIP8 with GO</title>
     <script src="wasm_exec.js"></script>
+    <script src="emu.js"></script>
+    <style>
+      #chip8 {
+        width: 640px;
+        height: 320px;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
 
-    <script>
-        const go = new Go();
-        WebAssembly.instantiateStreaming(fetch('chip8.wasm'), go.importObject).then(result => {
-            go.run(result.instance);
-        })
-    </script>
-</head>
-
-<body>
-
-</body>
-
+  <body>
+    <canvas id="chip8" width="64" height="32"></canvas>
+  </body>
 </html>
