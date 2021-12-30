@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CHIP8 with GO</title>
     <script src="wasm_exec.js"></script>
-    <script src="emu.js"></script>
     <style>
       #chip8 {
         width: 640px;
@@ -15,8 +14,10 @@
       }
     </style>
   </head>
-
+  
   <body>
     <canvas id="chip8" width="64" height="32"></canvas>
+    <button id="newRom">Click me</button>
+    <script src="emu.js"></script>
   </body>
 </html>

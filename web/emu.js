@@ -2,20 +2,6 @@ const go = new Go();
 let emu;
 let chip8;
 
-function render() {
-    ptr = chip8.GetFrame(emu);
-    const image = new Uint8ClampedArray(
-        chip8.memory.buffer,
-        ptr,
-        32 * 64 * 4
-    );
-
-    const canvas = document.getElementById("chip8");
-    const context = canvas.getContext("2d");
-    const pixelData = new ImageData(image, 64, 32);
-    context.putImageData(pixelData, 0, 0);
-}
-
 const chip8Controls = [
     'KeyX',
     'Digit1',
@@ -51,29 +37,39 @@ window.addEventListener("keydown", (e) => {
     }
 });
 
-let lastTime;
-function RAFCallback(timestamp) {
-    requestAnimationFrame(RAFCallback);
+function render() {
+    ptr = chip8.GetFrame();
+    const image = new Uint8ClampedArray(
+        chip8.memory.buffer,
+        ptr,
+        32 * 64 * 4
+    );
 
-    chip8.SetKeys(emu, keys)
-
-    const deltaTime = timestamp - (lastTime || timestamp);
-    lastTime = timestamp;
-    const clocks = deltaTime / 2;
-
-    for (let i = 0; i < clocks; i++) {
-        chip8.Step(emu)
-    }
-    render()
+    const canvas = document.getElementById("chip8");
+    const context = canvas.getContext("2d");
+    const pixelData = new ImageData(image, 64, 32);
+    context.putImageData(pixelData, 0, 0);
 }
 
+function RAFCallback() {
+    chip8.SetKeys(keys);
+    chip8.Step();
+    chip8.Step();
+    chip8.Step();
+    chip8.Step();
+    chip8.Step();
+    chip8.Step();
+    chip8.Step();
+    chip8.Step();
+    render();
+}
+let id;
 WebAssembly.instantiateStreaming(fetch("chip8.wasm"), go.importObject).then(
     (result) => {
         go.run(result.instance);
         chip8 = result.instance.exports;
 
-        let romName = "mySnake.ch8"
-        // romName = "c8_test.c8"
+        let romName = "space_invaders.ch8"
         fetch(romName)
             .then((response) => response.arrayBuffer())
             .then((rom) => {
@@ -81,9 +77,24 @@ WebAssembly.instantiateStreaming(fetch("chip8.wasm"), go.importObject).then(
 
                 (new Uint8Array(chip8.memory.buffer, ptr)).set(new Uint8Array(rom));
 
-                emu = chip8.NewChip8(ptr, rom.byteLength, rom.byteLength);
+                chip8.InitChip8(ptr, rom.byteLength, rom.byteLength);
 
-                requestAnimationFrame(RAFCallback)
+                console.log(chip8.memory.buffer)
+
+                id = setInterval(RAFCallback, 16)
             });
     }
 );
+
+newRom = document.getElementById("newRom");
+newRom.onclick = () => {
+    fetch("mySnake.ch8")
+        .then((response) => response.arrayBuffer())
+        .then((rom) => {
+            let ptr = chip8.malloc(rom.byteLength);
+
+            (new Uint8Array(chip8.memory.buffer, ptr)).set(new Uint8Array(rom));
+
+            chip8.InitChip8(ptr, rom.byteLength, rom.byteLength);
+        });
+}

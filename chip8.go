@@ -29,9 +29,12 @@ func (chip8 *Chip8) SetSprite(index, v0, v1, v2, v3, v4 uint8) {
 	chip8.memory[index*5+4] = v4
 }
 
-//export NewChip8
-func NewChip8(rom []uint8) *Chip8 {
-	chip8 := new(Chip8)
+var chip8 Chip8
+
+//export InitChip8
+func InitChip8(rom []uint8) {
+	chip8 = Chip8{}
+
 	chip8.PC = 0x200
 	chip8.timer = 1000.0 / 60.0
 	copy(chip8.memory[0x200:], rom)
@@ -53,8 +56,6 @@ func NewChip8(rom []uint8) *Chip8 {
 	chip8.SetSprite(0xD, 0xE0, 0x90, 0x90, 0x90, 0xE0)
 	chip8.SetSprite(0xE, 0xF0, 0x80, 0xF0, 0x80, 0xF0)
 	chip8.SetSprite(0xF, 0xF0, 0x80, 0xF0, 0x80, 0x80)
-
-	return chip8
 }
 
 func (chip8 *Chip8) ReadInstruction(addr uint16) uint16 {
@@ -67,7 +68,7 @@ func (chip8 *Chip8) IllegalInstruction() {
 
 // called at 500HZ
 //export Step
-func (chip8 *Chip8) Step() {
+func Step() {
 	chip8.timer -= 2.0
 	if chip8.timer < 0.0 {
 		if chip8.delayRegister > 0 {
@@ -256,9 +257,10 @@ func (chip8 *Chip8) Step() {
 	}
 }
 
+var image = [64 * 32]uint32{}
+
 //export GetFrame
-func (chip8 *Chip8) GetFrame() *uint32 {
-	image := make([]uint32, 64*32)
+func GetFrame() *uint32 {
 	for y := 0; y < 32; y++ {
 		row := chip8.screen[y]
 		for x := 0; x < 64; x++ {
@@ -274,7 +276,7 @@ func (chip8 *Chip8) GetFrame() *uint32 {
 }
 
 //export SetKeys
-func (chip8 *Chip8) SetKeys(keys uint16) {
+func SetKeys(keys uint16) {
 	chip8.keys = keys
 
 	if keys != 0 && chip8.paused {
